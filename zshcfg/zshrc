@@ -20,11 +20,14 @@ main() {
   pet_config
   java_config
   python_config
+  misc_alias
   def_autoloads
   exec_autoruns
   exec_compinit
   vi_mode  #Keep towards  end cos plugins have bad habit of changing this
   base16_shell
+  get_cheats
+  source_my_zshrc
   greeting
   cd ~
 }
@@ -211,6 +214,7 @@ neovim_config() {
   elif [[ $hasNeovim ]]; then
     alias vim=nvim
   fi
+  alias lv='nvim -u NONE'
 }
 
 pet_config() {
@@ -297,10 +301,27 @@ base16_shell() {
   fi
 }
 
+get_cheats() {
+  if [[ ! -f ~/bin/cht.sh ]]; then
+    curl https://cht.sh/:cht.sh > ~/bin/cht.sh
+    chmod +x ~/bin/cht.sh
+  fi
+}
+
+source_my_zshrc() {
+  [[ -f ~/my.zsh ]] && source ~/my.zsh
+}
+
 greeting() {
   command -v fortune 2>&1 >/dev/null && command -v cowsay 2>&1 >/dev/null && fortune | cowsay
 }
 
+misc_alias() {
+  alias urldecode='python -c "import sys, urllib as ul; \
+    print ul.unquote_plus(sys.argv[1])"'
+  alias urlencode='python -c "import sys, urllib as ul; \
+    print ul.quote_plus(sys.argv[1])"'
+}
 
 main
 
