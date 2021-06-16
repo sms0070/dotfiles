@@ -110,8 +110,10 @@ detect_os() {
 		echo "This Setup Script only works for Windows Cygwin, Windows Subsystem for Linux and MacOS"
 		exit -1
 	fi
+  [[ -f /etc/redhat-release ]] &&  export isRedhat=true
 	export osreleaseFile=/proc/sys/kernel/osrelease
 	echo "Checking $osreleaseFile (if present)"
+
 	if [[ -f  $osreleaseFile ]]; then
 		osrelease=`cat $osreleaseFile`
 		echo "Linux OS release is $osrelease"
@@ -243,28 +245,24 @@ install_pkgs() {
  echo "- (install_pkgs) Installing packages..."
  if [[ $isMacos == true ]]; then
    #brew install git || brew upgrade git 
-   brew install the_silver_searcher || brew upgrade the_silver_searcher  
-   brew install fortune || brew upgrade fortune  
-   brew install cowsay || brew upgrade cowsay  
-   #brew install python3 || brew upgrade python3   #now part of MacOS catalina
-   brew install leiningen || brew upgrade leiningen  
-   brew install nodejs || brew upgrade nodejs  
-   brew install go || brew upgrade go  
-   brew install rlwrap || brew upgrade rlwrap  
-   brew install yarn || brew upgrade yarn
-   brew install  neovim || brew upgrade neovim
+    brew install the_silver_searcher fortune cowsay upgrade cowsay jenv leiningen nodejs go rlwrap yarn neovim jenv
+    brew cask install skim 
  elif [[ $isLinux == true ]]; then
- echo "** NOTE: If RUNNING BEHIND PROXY, export http_proxy/https_proxy"
- sudo -E add-apt-repository -y ppa:neovim-ppa/unstable
- sudo -E add-apt-repository ppa:webupd8team/java
-  # BEGIN: Nodejs install. Taken from https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions
-  curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-  sudo apt-get install -y nodejs
-  # END : Nodejs install
-  sudo -E apt-get --yes install git curl zsh silversearcher-ag netcat-openbsd dh-autoreconf \
-    autoconf pkg-config tmux fortune-mod cowsay zip unzip python3 python3-pip ruby \
-    vim neovim nodejs rar unrar oracle-java8-installer rlwrap yarn
-  sudo apt-get -y autoremove
+   if [[ $isRedhat == true ]]; then
+     install_pkgs_redhat
+   else
+     echo "** NOTE: If RUNNING BEHIND PROXY, export http_proxy/https_proxy"
+     sudo -E add-apt-repository -y ppa:neovim-ppa/unstable
+     sudo -E add-apt-repository ppa:webupd8team/java
+     # BEGIN: Nodejs install. Taken from https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions
+     curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+     sudo apt-get install -y nodejs
+     # END : Nodejs install
+     sudo -E apt-get --yes install git curl zsh silversearcher-ag netcat-openbsd dh-autoreconf \
+       autoconf pkg-config tmux fortune-mod cowsay zip unzip python3 python3-pip ruby \
+       vim neovim nodejs rar unrar oracle-java8-installer rlwrap yarn
+            sudo apt-get -y autoremove
+     fi
  elif [[ $isCygwin == true ]]; then
    if [[ -f /tmp/apt-cyg ]]; then
      rm /tmp/apt-cyg
@@ -288,7 +286,8 @@ install_pkgs() {
    echo "INSTALL python neovim modules using pip3..."
    pip3 install --user pynvim
    echo "INSTALL conan package manager ..."
-   pip3 install --user conan #conan will be added in ~/Library/Python/3.7/bin/conan. Needs new shell
+   # pip3 install --user conan #conan will be added in ~/Library/Python/3.7/bin/conan. Needs new shell
+   pip3 install conan
    #pip3 install neovim --upgrade
    #pip3 install --user neovim-remote
  else
@@ -302,6 +301,16 @@ install_pkgs() {
  #  curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh | zsh 
  # fi
 
+}
+
+install_pkgs_redhat() {
+  echo "- (install_pkgs_redhat) Using Yum to install packages..."
+  export LANG=en_US.UTF-8
+  export LANGUAGE=en_US.UTF-8
+  export LC_COLLATE=C
+  export LC_CTYPE=en_US.UTF-8
+  sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+  sudo yum install -y neovim python3-neovim
 }
 
 setup_go_linux() {
